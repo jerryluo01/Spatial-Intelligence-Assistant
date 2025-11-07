@@ -85,6 +85,7 @@ FastAPI Backend (Docker)
   "answer": "Solar modules include Panel_A and Panel_B (total 84 kg).",
   "highlight": ["Panel_A", "Panel_B"]
 }
+```
 3ds Max Output
 
 Panels highlight in the viewport.
