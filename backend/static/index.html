@@ -53,46 +53,86 @@
 
         <script>
             const input = document.getElementById("userInput");
+            const chat = document.getElementById("chat");
 
-            input.addEventListener("keydown", function (event) {
-                if (event.key == "Enter") {
+            input.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
                     event.preventDefault();
                     sendQuery();
                 }
             });
 
             async function sendQuery() {
-                const query = document.getElementById("userInput").value.trim();
+                const query = input.value.trim();
                 if (!query) return;
-                const chat = document.getElementById("chat");
-                chat.innerHTML += `<p><b>You:</b> ${query}</p>`;
-                const aiLine = document.createElement("p");
-                aiLine.innerHTML += `<b>AI:</b> <span></span>`;
-                const span = aiLine.querySelector("span");
-                chat.append(aiLine);
 
+                chat.innerHTML += `<p><b>You:</b> ${query}</p>`;
                 input.value = "";
 
-                const res = await fetch("http://localhost:8000/stream_query", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query: query }),
-                });
+                try {
+                    const res = await fetch(
+                        "http://localhost:8000/stream_query",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ query }),
+                        }
+                    );
 
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                let done = false;
-
-                while (!done) {
-                    const { value, done: readerDone } = await reader.read();
-                    done = readerDone;
-                    if (value) {
-                        span.textContent += decoder.decode(value);
-                        chat.scrollTop = chat.scrollHeight;
+                    if (!res.ok) {
+                        chat.innerHTML += `<p style="color:red;">Error: ${res.status}</p>`;
+                        return;
                     }
-                }
 
-                chat.innerHTML += "<hr/>";
+                    const data = await res.json();
+
+                    const formattedAnswer = data.answer
+                        .replace(/\n/g, "<br>")
+                        .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+                    const formattedMatches =
+                        data.matches
+                            ?.map(
+                                (m, i) => `
+                    <div style="
+                        background:#0b0c10;
+                        padding:8px;
+                        border-radius:6px;
+                        margin-bottom:8px;
+                        border:1px solid #45a29e;
+                    ">
+                        <b>Result ${i + 1}</b><br>
+                        <b>Name:</b> ${m.name || "N/A"}<br>
+                        <b>Class:</b> ${m.class_ || "N/A"}<br>
+                        <b>Subsystem:</b> ${
+                            m.user_props?.Subsystem || "N/A"
+                        }<br>
+                        <b>Weight:</b> ${m.user_props?.Weight || "N/A"}
+                    </div>`
+                            )
+                            .join("") || "";
+
+                    chat.innerHTML += `
+                <div style="margin-top:10px; padding:10px; background:#16202a; border-radius:8px;">
+                    <p><b>AI:</b><br>${formattedAnswer}</p>
+                    ${
+                        data.matches?.length
+                            ? `<div style="
+                                margin-top:10px;
+                                max-height:200px;
+                                overflow-y:auto;
+                                overflow-x:hidden;
+                            ">${formattedMatches}</div>`
+                            : ""
+                    }
+                </div>
+                <hr/>
+            `;
+
+                    chat.scrollTop = chat.scrollHeight;
+                } catch (err) {
+                    chat.innerHTML += `<p style="color:red;">Error: ${err.message}</p>`;
+                }
             }
         </script>
     </body>
