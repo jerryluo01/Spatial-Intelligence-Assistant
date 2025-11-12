@@ -18,6 +18,7 @@ Example queries:
 
 <img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/5bbb8a60-a912-4ced-bb99-997d4af4cbf4" />
 *LLM ran locally so takes around 30s for reponse*
+*Checkout README.Docker.md for how to run*
 
 ---
 
