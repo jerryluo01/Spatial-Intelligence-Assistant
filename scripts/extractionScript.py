@@ -10,6 +10,7 @@ API_URL = "http://localhost:8000/ingest_json"
 
 # --- Utility getters ----------------------------------------------------------
 
+
 def safe_get_mat_name(obj):
     try:
         if obj.material:
@@ -47,6 +48,7 @@ def set_userprop_if_missing(obj, prop, value):
 
 # --- Auto-assignment logic ----------------------------------------------------
 
+
 def auto_assign_subsystem_and_weight(obj):
     """Heuristics to fill missing Subsystem/Weight based on object name."""
     name = obj.name.lower()
@@ -69,6 +71,7 @@ def auto_assign_subsystem_and_weight(obj):
 
 
 # --- Class detection ----------------------------------------------------------
+
 
 def node_class(obj):
     cls = str(rt.classof(obj))
@@ -96,15 +99,17 @@ for obj in rt.objects:
     subsystem = get_userprop_via_maxscript(obj, "Subsystem")
     weight = get_userprop_via_maxscript(obj, "Weight")
 
+    try:
+        numeric_weight = float(weight)
+    except (ValueError, TypeError):
+        numeric_weight = "N/A"
+
     entry = {
         "name": obj.name,
         "parent": safe_get_parent(obj),
         "class_": node_class(obj),
         "material": safe_get_mat_name(obj),
-        "user_props": {
-            "Subsystem": subsystem,
-            "Weight": weight
-        }
+        "user_props": {"Subsystem": subsystem, "Weight": numeric_weight},
     }
 
     print(f"{obj.name} → Subsystem: {subsystem}, Weight: {weight}")

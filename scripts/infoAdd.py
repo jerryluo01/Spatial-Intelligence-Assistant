@@ -17,6 +17,6 @@ for obj in rt.objects:
         weight = 0.0
 
     rt.setUserProp(obj, "Subsystem", subsystem)
-    rt.setUserProp(obj, "Weight", str(weight))
+    rt.setUserProp(obj, "Weight", weight)
 
 print("successful")

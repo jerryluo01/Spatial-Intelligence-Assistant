@@ -30,11 +30,20 @@ def ingest():
         data = json.load(f)
 
     nodes = data["nodes"]
-    texts = [
-        f"Name: {node['name']}, Class: {node['class_']}, Material: {node['material']}, "
-        f"Subsystem: {node['user_props'].get('Subsystem', '')}, Weight: {node['user_props'].get('Weight', '')} "
-        for node in nodes
-    ]
+    texts = []
+    for node in nodes:
+
+        try:
+            weight = float(node["user_props"].get("Weight", "N/A"))
+        except (ValueError, TypeError):
+            weight = "N/A"
+
+        node["user_props"]["Weight"] = weight
+
+        texts.append(
+            f"Name: {node['name']}, Class: {node['class_']}, Material: {node['material']}, "
+            f"Subsystem: {node['user_props'].get('Subsystem', '')}, Weight: {weight}"
+        )
 
     embeddings = model.encode(texts)
 
